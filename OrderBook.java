@@ -5,7 +5,7 @@ import pkg.exception.StockMarketExpection;
 import pkg.market.Market;
 import pkg.market.api.*;
 public class OrderBook {
-	Market m;
+	private Market m;
 	HashMap<String, ArrayList<Order>> buyOrders;
 	HashMap<String, ArrayList<Order>> sellOrders;
 	PriceSetter priceSetter;
@@ -17,8 +17,6 @@ public class OrderBook {
 	}
 
 	public void addToOrderBook(Order order) {
-		// Populate the buyOrders and sellOrders data structures, whichever
-		// appropriate
 		if (BuyOrder.class.isInstance(order)){
 			if (this.buyOrders.containsKey(order.getStockSymbol())){
 				ArrayList<Order> buyOrderList =buyOrders.get(order.getStockSymbol());
@@ -45,27 +43,20 @@ public class OrderBook {
 	}
 
 	public void trade() {
-		// Complete the trading.
-		// 1. Follow and create the orderbook data representation (see spec)
-		// 2. Find the matching price
-		// 3. Update the stocks price in the market using the PriceSetter.
-		// Note that PriceSetter follows the Observer pattern. Use the pattern.
-		// 4. Remove the traded orders from the orderbook
-		// 5. Delegate to trader that the trade has been made, so that the
-		// trader's orders can be placed to his possession (a trader's position
-		// is the stocks he owns)
-		// (Add other methods as necessary)
 		for (String stockSymbol : this.sellOrders.keySet()){
 			if (this.buyOrders.containsKey(stockSymbol)){
+				sellOrderList  = this.sellOrders.remove(stockSymbol);
+				buyOrderList = this.buyOrders.remove(stockSymbol);
+				Collections.sort(sellOrderList, new ComparatorLowToHigh());
+				Collections.sort(buyOrderList, new ComparatorHighToLow());
+				this.sellOrders.put(stockSymbol,sellOrderList);
+				this.buyOrders.put(stockSymbol,buyOrderList);
 				double matchPrice  = matchingPrice(this.sellOrders.get(stockSymbol), this.buyOrders.get(stockSymbol));
 				if (matchPrice>0){
 					try{
 						m.updateStockPrice(stockSymbol, matchPrice);
 					}
 					catch (StockMarketExpection e){};
-//					IObserver observer = new IObserver();
-//					priceSetter.registerObserver(observer);
-//					priceSetter.setNewPrice(m, stockSymbol, matchPrice);
 					int stockTradeSize =0;
 					
 				    for (Order sellOrder : this.sellOrders.get(stockSymbol)){
@@ -139,7 +130,6 @@ public class OrderBook {
 				buyPriceList.add(priceSet);
 			}
 		}
-		////////////////////get the arraylist for price matching
 		
 		for(int i = 0; i<sellPriceList.size(); i++){
 			if(i>0){
@@ -179,23 +169,21 @@ public class OrderBook {
 		}
 		return matchPrice; 
 	}
-	private ArrayList<Order> sortOrderPrice(ArrayList<Order> orders){
-		ArrayList<Order> sortedOrders = new ArrayList<Order>();
-		boolean flag = true;
-		sortedOrders.add(orders.get(0));
-		for (int i =1; i<orders.size(); i++){
-			for (int j=0; j<sortedOrders.size();j++){
-				if (orders.get(i).getPrice()>sortedOrders.get(j).getPrice()){
-					sortedOrders.add(j,orders.get(i));
-					flag = false;
-					break;
-				}
-			}
-			if (flag){
-				sortedOrders.add(orders.get(i));
-			}
-		}
-		return sortedOrders;
+private class ComparatorLowToHigh implements Comparator<Order> {
+	    @Override
+	    public int compare(Order o1, Order o2) {
+	    	double compareIndicator= 100*(o1.getPrice() - o2.getPrice());
+	    	int Indicator =(int) compareIndicator;
+	    	return Indicator;
+	    }
+	}
+	private class ComparatorHighToLow implements Comparator<Order> {
+	    @Override
+	    public int compare(Order o1, Order o2) {
+	    	double compareIndicator= 100*(o1.getPrice() - o2.getPrice());
+	    	int Indicator =(int) compareIndicator;
+	    	return -Indicator;
+	    }
 	}
 	
 }

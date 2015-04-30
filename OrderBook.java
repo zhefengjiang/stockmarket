@@ -114,7 +114,7 @@ public class OrderBook {
 				sellPriceList.add(priceSet);
 			}
 		}
-		for (int i = 0; i<buyOrderList.size(); i++){
+		for (int i = 0; i < buyOrderList.size(); i++){
 			double priceSet[] = new double[3];
 			priceSet[0] = buyOrderList.get(i).getPrice();
 			priceSet[1] = buyOrderList.get(i).getSize();
@@ -131,7 +131,7 @@ public class OrderBook {
 			}
 		}
 		
-		for(int i = 0; i<sellPriceList.size(); i++){
+		for(int i = 0; i < sellPriceList.size(); i++){
 			if(i>0){
 				sellPriceList.get(i)[2] =sellPriceList.get(i-1)[2] + sellPriceList.get(i)[1];
 			}
